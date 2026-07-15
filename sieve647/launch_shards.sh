@@ -1,5 +1,5 @@
 #!/bin/bash
-# 8 шардов, диапазон m=[1.1e9, 1e12], overlap 1e6. Каждый шард — свой checkpoint/findings.
+# 8 shards, range m=[1.1e9, 1e12], overlap 1e6. Each shard gets its own checkpoint/findings.
 cd "$(dirname "$0")" || exit 1
 mkdir -p logs
 VENV="$HOME/Projects/math-prover/.venv/bin/python"

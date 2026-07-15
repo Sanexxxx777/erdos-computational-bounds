@@ -46,6 +46,23 @@ comments on Tao's blog) by ×10⁴ and independently reproduces both known
 exceptional values. Per-shard minima of F(n)−n grow monotonically
 (23,989 → 868,399), consistent with F(n)−n → ∞.
 
+## Related Erdős repositories
+
+This repo is certificate/computation only — SAT + LRAT and a segmented sieve,
+no machine learning or theorem proving. Two other repos cover different
+Erdős problems with different methods:
+
+- [ProofForge](https://github.com/Sanexxxx777/ProofForge) — Lean 4 / Mathlib
+  formal proofs (Erdős #1084, #1052), merged into Google DeepMind's
+  `formal-conjectures`.
+- [erdos-openevolve](https://github.com/Sanexxxx777/erdos-openevolve) — an
+  evolutionary LLM coding pipeline (OpenEvolve/AlphaEvolve) that reproduces a
+  numerical SOTA bound for the minimum overlap problem; not a formal proof.
+
 ## License
 
 Apache-2.0
+
+---
+
+Built by Aleksandr Shulgin · [shulgin.is-a.dev](https://shulgin.is-a.dev)

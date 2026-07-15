@@ -1,46 +1,50 @@
 """
-Совместное сегментированное решето для задач Erdos #647 и #385.
-Один проход по блокам m=1..TARGET, два независимых детектора на общих
-tau(m)/spf(m) массивах.
+Combined segmented sieve for Erdos problems #647 and #385.
+One pass over blocks m=1..TARGET, two independent detectors sharing the
+tau(m)/spf(m) arrays.
 
-=== Формализация #647 (Erdos-Selfridge) === (см. 647.txt)
-Точный текст: пусть tau(n) -- число делителей n. Существует ли n>24 такое что
+=== Formalization of #647 (Erdos-Selfridge) ===
+Exact statement: let tau(n) be the number of divisors of n. Does there exist
+n>24 such that
     max_{m<n} (m + tau(m)) <= n+2 ?
-Известно, что для n=24 это верно. Граница n+2 точная: max(tau(n-1)+n-1,
-tau(n-2)+n-2) >= n+2 для всех n (доказано в тексте, не нужно проверять).
-Эрдёш: "крайне сомнительно", что таких n>24 бесконечно много; предложил $44
-за ОДИН такой пример (задача открыта).
+Known true for n=24. The bound n+2 is tight: max(tau(n-1)+n-1,
+tau(n-2)+n-2) >= n+2 for all n (proved in the literature, not re-checked
+here). Erdos called it "extremely doubtful" that infinitely many such n
+exist, and offered $44 for a SINGLE example (the problem is open).
 
-Детектор: R(n) = max_{m<n} (m+tau(m)) -- бегущий (неубывающий) рекорд.
-Ищем n>24 c R(n) <= n+2. Находка = решение открытой проблемы.
+Detector: R(n) = max_{m<n} (m+tau(m)) -- a running (non-decreasing) record.
+Search for n>24 with R(n) <= n+2. A hit would answer the open problem.
 
-=== Формализация #385 (Erdos, Eggleton, Selfridge) === (см. 385.txt)
-Точный текст: F(n) = max_{m<n, m составное} (m + p(m)), где p(m) -- наименьший
-простой делитель m. Вопросы: (1) верно ли F(n) > n для всех достаточно
-больших n? (2) стремится ли F(n)-n к бесконечности?
-Тривиально F(n) <= n + sqrt(n) (т.к. p(m) <= sqrt(m) для составного m).
+=== Formalization of #385 (Erdos, Eggleton, Selfridge) ===
+Exact statement: F(n) = max_{m<n, m composite} (m + p(m)), where p(m) is the
+smallest prime factor of m. Questions: (1) is F(n) > n for all sufficiently
+large n? (2) does F(n)-n tend to infinity?
+Trivially F(n) <= n + sqrt(n) (since p(m) <= sqrt(m) for composite m).
 
-Детектор: F(n) -- бегущий рекорд ТОЛЬКО по составным m (простые и m=1 не
-участвуют в максимуме). Ищем n c F(n) <= n -- нарушение гипотезы (1).
-Малые n игнорируются как находки (см. SMALL_N_385) -- текст явно говорит
-"for all sufficiently large n", т.е. отдельные нарушения на малых n ожидаемы.
-Параллельно трекаем running min (F(n)-n) по большим n -- индикатор для (2).
+Detector: F(n) is a running record taken ONLY over composite m (primes and
+m=1 are excluded from the maximum). Search for n with F(n) <= n -- a
+violation of conjecture (1). Small n are ignored as hits (see SMALL_N_385):
+the statement is explicitly about "all sufficiently large n", so isolated
+violations at small n are expected. In parallel, track the running min of
+(F(n)-n) over large n as an indicator for (2).
 
-=== РАСХОЖДЕНИЯ С ТЗ ===
-- ТЗ формулирует цель 647 как "n, опровергающее утверждение". Неточно: сам
-  вопрос задачи -- "существует ли n>24..."; найденный n ОТВЕЧАЕТ на вопрос
-  утвердительно (решение открытой проблемы, приз Эрдёша $44), это не
-  "опровержение". Взято по тексту, как требует инструкция.
-- ТЗ для 385 не уточняет "большие n"; текст явно ограничивает вопрос
-  "sufficiently large n" -- реализовано через порог SMALL_N_385.
+=== Notes on problem-statement precision ===
+- #647's goal is sometimes loosely phrased as "find n disproving the
+  statement". More precisely: the question is "does there exist n>24...";
+  a found n ANSWERS the question affirmatively (a solution to the open
+  problem, Erdos's $44 prize), not a disproof.
+- Informal descriptions of #385 sometimes drop "large n"; the original
+  statement explicitly restricts the question to "sufficiently large n" --
+  implemented here via the SMALL_N_385 threshold.
 
-=== Шардинг (--lo/--hi) ===
-Бегущие рекорды R(n)/F(n) -- глобальные (зависят от ВСЕЙ истории m=1..n).
-Независимый шард не знает истинный рекорд на своей левой границе, поэтому:
-шард реально решетит с (lo-overlap), чтобы "разогреть" локальный рекорд, но
-находки логирует только начиная с m=lo. Находки с m-lo < overlap помечаются
-near_shard_boundary=true -- локальный рекорд там мог не успеть "догнать"
-истинный (нужна перепроверка склейкой с соседним шардом).
+=== Sharding (--lo/--hi) ===
+The running records R(n)/F(n) are global (they depend on the ENTIRE history
+m=1..n). An independent shard doesn't know the true record at its left
+boundary, so a shard actually sieves starting at (lo-overlap) to "warm up"
+the local record, but only logs findings from m=lo onward. Findings with
+m-lo < overlap are flagged near_shard_boundary=true -- the local record
+there may not have caught up with the true one yet (needs re-checking by
+stitching with the neighboring shard).
 """
 import os
 import sys
@@ -73,10 +77,10 @@ def sieve_primes_upto(n):
 
 
 def block_tau(lo, hi):
-    """tau(m) для m в [lo,hi) через парную схему делителей:
-    tau(m) = 2*|{d<=sqrt(m): d|m}| - [m -- полный квадрат].
-    counts -- uint16 (tau(m)<~11000 для m<1e13, помещается с запасом),
-    финальный tau тоже uint16 (экономия памяти на больших блоках)."""
+    """tau(m) for m in [lo,hi) via the paired-divisor scheme:
+    tau(m) = 2*|{d<=sqrt(m): d|m}| - [m is a perfect square].
+    counts is uint16 (tau(m)<~11000 for m<1e13, fits with margin);
+    the final tau is uint16 too (saves memory on large blocks)."""
     n = hi - lo
     counts = np.zeros(n, dtype=np.uint16)
     D = math.isqrt(hi - 1)
@@ -99,8 +103,8 @@ def block_tau(lo, hi):
 
 
 def block_spf(lo, hi, primes):
-    """Наименьший простой делитель m для m в [lo,hi). 0 если m простое или m=1.
-    int32 -- значения до sqrt(1e13)~3.16e6, uint16 не хватит."""
+    """Smallest prime factor of m for m in [lo,hi). 0 if m is prime or m=1.
+    int32 -- values up to sqrt(1e13)~3.16e6, uint16 isn't enough."""
     n = hi - lo
     spf = np.zeros(n, dtype=np.int32)
     for p in primes:
@@ -136,9 +140,9 @@ def log_finding(rec, path):
 
 def process_block(lo, hi, primes, max647, max385, min_gap385,
                    report_from=0, overlap=0, verbose=True, findings_path=FINDINGS_PATH):
-    """Один блок: считает tau/spf, обновляет бегущие рекорды (in-place, чтобы
-    не плодить лишние int64-копии), логирует находки с m>=report_from.
-    Возвращает (max647, max385, min_gap385, n_findings647, n_findings385)."""
+    """One block: computes tau/spf, updates the running records (in-place, to
+    avoid extra int64 copies), logs findings with m>=report_from.
+    Returns (max647, max385, min_gap385, n_findings647, n_findings385)."""
     tau = block_tau(lo, hi)
     D_block = math.isqrt(hi - 1)
     idx = np.searchsorted(primes, D_block, side="right")
@@ -148,7 +152,7 @@ def process_block(lo, hi, primes, max647, max385, min_gap385,
     n_vals = m + 1
     report_mask = m >= report_from
 
-    # --- #647 --- (running647 переиспользует буфер excess647: accumulate/maximum с out=)
+    # --- #647 --- (running647 reuses the excess647 buffer: accumulate/maximum with out=)
     excess647 = m + tau
     np.maximum.accumulate(excess647, out=excess647)
     np.maximum(excess647, max647, out=excess647)
@@ -226,18 +230,18 @@ def run(sieve_lo, sieve_hi, report_from, overlap, block, ckpt_path, findings_pat
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("target", nargs="?", type=int, default=None,
-                     help="Последовательный режим: решетить m=1..target (checkpoint.json/findings.jsonl)")
-    ap.add_argument("--block", type=int, default=BLOCK, help="Размер блока, чисел")
+                     help="Sequential mode: sieve m=1..target (checkpoint.json/findings.jsonl)")
+    ap.add_argument("--block", type=int, default=BLOCK, help="Block size, in numbers")
     ap.add_argument("--reset", action="store_true")
-    ap.add_argument("--lo", type=int, default=None, help="Шард: m>=lo репортится (m-диапазон, не n)")
-    ap.add_argument("--hi", type=int, default=None, help="Шард: конец m-диапазона (искл.)")
+    ap.add_argument("--lo", type=int, default=None, help="Shard: m>=lo is reported (m-range, not n)")
+    ap.add_argument("--hi", type=int, default=None, help="Shard: end of the m-range (exclusive)")
     ap.add_argument("--shard-overlap", type=int, default=1_000_000,
-                     help="Насколько раньше lo реально начать решетить для разогрева рекорда")
+                     help="How far before lo to actually start sieving, to warm up the record")
     args = ap.parse_args()
 
     if args.lo is not None or args.hi is not None:
         if args.lo is None or args.hi is None:
-            sys.exit("--lo и --hi нужны вместе")
+            sys.exit("--lo and --hi are required together")
         sieve_lo = max(1, args.lo - args.shard_overlap)
         ckpt_path = os.path.join(WORKDIR, f"checkpoint_{args.lo}_{args.hi}.json")
         findings_path = os.path.join(WORKDIR, f"findings_{args.lo}_{args.hi}.jsonl")

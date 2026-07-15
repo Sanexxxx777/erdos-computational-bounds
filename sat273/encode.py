@@ -2,7 +2,7 @@
 """
 SAT attack on Erdos Problem #273.
 
-FORMALIZATION (from ~/Projects/math-prover/screening/latex_cache/273.txt +
+FORMALIZATION (cross-checked against https://www.erdosproblems.com/273 and
 formal-conjectures/FormalConjectures/ErdosProblems/273.lean, StrictCoveringSystem):
 
   Question: does there exist a finite covering system of Z -- congruences
