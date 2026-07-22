@@ -1,5 +1,7 @@
 # Computational bounds for three Erdős problems
 
+*На русском: верифицированные вычислительные результаты для трёх открытых проблем Эрдёша (#273, #385, #647) — SAT-решение с проверяемым LRAT-сертификатом и сегментированное решето, независимо проверяемые несколькими чекерами. Полные детали и команды воспроизведения — ниже, на английском.*
+
 Verified computational results for [Erdős problems](https://www.erdosproblems.com)
 **#273**, **#385**, and **#647**. All three problems remain open — these are
 machine-checked partial bounds, not solutions.
