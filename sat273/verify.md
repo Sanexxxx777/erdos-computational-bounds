@@ -64,3 +64,27 @@ equivalent to covering ℤ. Distinctness of moduli is enforced by the at-most-on
 blocks. Hence: **no covering system of ℤ with pairwise distinct moduli, each of
 the form p−1 ≤ 50 for a prime p ≥ 5.** Moduli larger than 50 are not
 constrained — the general problem #273 remains open.
+
+## B=57 update (2026-07-22)
+
+The bound is raised to 57: the pool gains the modulus 52 (=4·13), giving
+L = 16,576,560 and a CNF with 362 variables and 16,582,641 clauses.
+
+```bash
+python3 export_dimacs.py --B 57       # writes erdos273_B57.cnf + .meta.json
+shasum -a 256 erdos273_B57.cnf
+# f578e43362aa7d1bdf6f6be0a34518b4e370fb34a96bceeb479da3587821baab
+xz -d -k artifacts/proof_B57_plain.lrat.xz
+drat-trim/lrat-check erdos273_B57.cnf proof_B57_plain.lrat   # → c VERIFIED
+lrat-trim/lrat-trim  erdos273_B57.cnf proof_B57_plain.lrat   # → s VERIFIED
+CML_HEAP_SIZE=15000 CML_STACK_SIZE=2000 \
+  cake_lpr/cake_lpr  erdos273_B57.cnf proof_B57_plain.lrat   # → s VERIFIED UNSAT
+```
+
+Note: `cake_lpr` needs its CakeML heap raised (env vars above) — the default
+4GB heap is exhausted on this proof (272 MB raw). Checker verdicts, hashes and
+timings: `proof_B57_verification.json`.
+
+Hence: **no covering system of ℤ with pairwise distinct moduli, each of the
+form p−1 ≤ 57 for a prime p ≥ 5.** The next admissible modulus is 58 (=2·29),
+which multiplies L by 29 — beyond practical reach of this direct encoding.

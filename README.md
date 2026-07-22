@@ -8,21 +8,27 @@ machine-checked partial bounds, not solutions.
 
 | Problem | Result | Verification |
 |---|---|---|
-| [#273](https://www.erdosproblems.com/273) | No covering system of ℤ with pairwise distinct moduli of the form p−1 ≤ 50 (p prime ≥ 5) | UNSAT certificate (LRAT) checked by 3 independent checkers incl. the formally verified [cake_lpr](https://github.com/tanyongkiam/cake_lpr) |
+| [#273](https://www.erdosproblems.com/273) | No covering system of ℤ with pairwise distinct moduli of the form p−1 ≤ 57 (p prime ≥ 5) | UNSAT certificates (LRAT, B=50 and B=57) each checked by 3 independent checkers incl. the formally verified [cake_lpr](https://github.com/tanyongkiam/cake_lpr) |
 | [#385](https://www.erdosproblems.com/385) | F(n) > n for all 10⁴ < n ≤ 1.0011×10¹² except the two known values n = 267672, 267680 | Segmented sieve, deterministic checkpoints, shard cross-checks |
 | [#647](https://www.erdosproblems.com/647) | No n > 24 with max_{m<n}(m + τ(m)) ≤ n + 2 up to 1.0011×10¹² | Same sieve pass; known anchor R(24)=26 reproduced |
 
 ## #273 — SAT certificate (`sat273/`)
 
-A covering system with all moduli from the full admissible pool
-{4, 6, 10, 12, 16, 18, 22, 28, 30, 36, 40, 42, 46} (every p−1 ≤ 50, p ≥ 5 prime;
-lcm L = 1,275,120) exists iff a CNF is satisfiable: one variable per congruence
-class (n, a), pairwise at-most-one per modulus (distinct moduli), one coverage
-clause per residue mod L. The CNF (310 vars, 1,279,875 clauses) is UNSAT.
+A covering system with all moduli from the full admissible pool exists iff a
+CNF is satisfiable: one variable per congruence class (n, a), pairwise
+at-most-one per modulus (distinct moduli), one coverage clause per residue
+mod L. Two certified bounds:
+
+- **B=50**: pool {4, …, 46} (13 moduli, L = 1,275,120), CNF 310 vars /
+  1,279,875 clauses — UNSAT.
+- **B=57** (2026-07-22): pool gains 52 (=4·13), L = 16,576,560, CNF 362 vars /
+  16,582,641 clauses — UNSAT.
 
 - `export_dimacs.py` — deterministic CNF generator (~40 lines of logic);
-  SHA-256 of the generated CNF is pinned in `erdos273_B50.meta.json`
-- `artifacts/` — CNF (1.7 MB xz) and LRAT certificate (11 MB xz)
+  SHA-256 of each generated CNF is pinned in `erdos273_B{50,57}.meta.json`
+- `artifacts/` — B=50 CNF + certificate, B=57 certificate (33 MB xz;
+  regenerate the B=57 CNF with `--B 57`, 770 MB raw)
+- `proof_B57_verification.json` — checker verdicts, hashes, timings
 - See `verify.md` for end-to-end verification (≈ 15 minutes from scratch)
 
 Certificate produced by CaDiCaL 3.0.0 with `--plain` (inprocessing disabled —

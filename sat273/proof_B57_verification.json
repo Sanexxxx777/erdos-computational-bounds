@@ -1,0 +1,34 @@
+{
+  "problem": "erdos273",
+  "claim": "no covering system of Z with pairwise distinct moduli of the form p-1 <= 57 (p prime >= 5)",
+  "date": "2026-07-22",
+  "cnf": {
+    "file": "erdos273_B57.cnf",
+    "sha256": "f578e43362aa7d1bdf6f6be0a34518b4e370fb34a96bceeb479da3587821baab",
+    "n_vars": 362,
+    "n_clauses": 16582641,
+    "L": 16576560,
+    "moduli": [4, 6, 10, 12, 16, 18, 22, 28, 30, 36, 40, 42, 46, 52],
+    "generator": "export_dimacs.py --B 57 (deterministic, aborts on pool truncation)"
+  },
+  "solver": {
+    "name": "cadical",
+    "version": "3.0.0",
+    "args": "--plain --lrat --no-binary",
+    "verdict": "s UNSATISFIABLE",
+    "process_time_s": 1923.95
+  },
+  "proof": {
+    "file": "proof_B57_plain.lrat",
+    "bytes": 272366047,
+    "sha256": "127861cbcfd10cc977cf04591c0406389e9ccfa4b6af2cdd1defb6aede8be60a",
+    "xz_file": "proof_B57_plain.lrat.xz",
+    "xz_bytes": 34971480,
+    "xz_sha256": "1b358f4eb51993b50ee518d3d6c7b4c5f608cfb4df9868dcae6bd28756d392bc"
+  },
+  "checkers": [
+    {"name": "lrat-check (drat-trim)", "commit": "2e3b2dc0", "verdict": "c VERIFIED", "time_s": 20.6},
+    {"name": "lrat-trim", "version": "0.2.0", "verdict": "s VERIFIED", "time_s": 2.9, "note": "exit 20 = empty clause derived, expected for UNSAT"},
+    {"name": "cake_lpr (formally verified, HOL4/CakeML)", "commit": "a4323b20", "verdict": "s VERIFIED UNSAT", "env": "CML_HEAP_SIZE=15000 CML_STACK_SIZE=2000", "note": "default 4GB CakeML heap is insufficient for this proof size; ~15GB heap required"}
+  ]
+}

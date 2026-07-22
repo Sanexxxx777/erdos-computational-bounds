@@ -1,0 +1,25 @@
+{
+  "B": 57,
+  "moduli": [
+    4,
+    6,
+    10,
+    12,
+    16,
+    18,
+    22,
+    28,
+    30,
+    36,
+    40,
+    42,
+    46,
+    52
+  ],
+  "L": 16576560,
+  "n_vars": 362,
+  "n_clauses": 16582641,
+  "var_map": "var(n,a) = 1 + sum(n' for n' in moduli if n' < n) + a",
+  "clause_order": "pairwise AtMostOne per modulus (ascending), then coverage clause per residue 0..L-1",
+  "cnf_sha256": "f578e43362aa7d1bdf6f6be0a34518b4e370fb34a96bceeb479da3587821baab"
+}
